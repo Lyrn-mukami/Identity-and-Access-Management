@@ -18,7 +18,7 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 
-db_drop_and_create_all()
+#db_drop_and_create_all()
 
 # ROUTES
 
@@ -173,20 +173,30 @@ def unprocessable(error):
 '''
 @app.errorhandler(404)
 def not_found(error):
-        return (jsonify({
+        return jsonify({
             "success": False, 
             "error": 404,
             "message": "resource not found"
-            }), 404, )
+            }), 404
 
 '''
 @TODO implement error handler for AuthError
     error handler should conform to general task above
 '''
 @app.errorhandler(AuthError)
-def bad_request(error):
-        return jsonify({
+def authentication_error(auth_error):
+    return jsonify(
+        {
             "success": False,
-            "error": 403,
-            "message": "unauthorised access"}), 403
+            "error": auth_error.status_code,
+            "message": auth_error.error['description']
+        }
+    ), auth_error.status_code
 
+@app.errorhandler(500)
+def server_error(error):
+    return jsonify({
+        "success": False,
+        "error": 500,
+        "message": "Internal server error"
+    }), 500
